@@ -1,0 +1,1 @@
+This tools is use expect login to server via SSH, change user and root password. Due to expect is slow (sometime is waiting for respose), so use a python use multithread method to call multiple expect script to those servers.

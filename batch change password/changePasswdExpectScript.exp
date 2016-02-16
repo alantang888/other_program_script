@@ -1,0 +1,67 @@
+#!/usr/bin/expect -f
+#match_max 100000
+
+# set Variables
+set ipaddr [lindex $argv 0]
+set userName [lindex $argv 1]
+set oldUserPasswd [lindex $argv 2]
+set oldRootPasswd [lindex $argv 3]
+set newUserPasswd [lindex $argv 4]
+set newRootPasswd [lindex $argv 5]
+
+spawn ssh $userName@$ipaddr
+
+set timeout 10
+expect {
+	"Connection refused" { exit 2}
+	"No route to host" { exit 2}
+	"(yes/no)? " {send "yes\r"; exp_continue}
+	"*assword: " {send "$oldUserPasswd\r"}
+	
+	timeout { puts stderr "$ipaddr error - Connection timed out"; exit 1}
+}
+
+expect {
+	"*Permission denied, please try again*assword: " { puts stderr "$ipaddr error - Wrong user passwd"; exit 1}
+	"$ " { send "su -\r"; }
+	"]" { send "su -\r"; }
+	
+	timeout { puts stderr "$ipaddr error - Wait for shell timed out"; exit 1}
+}
+
+expect {
+	"*assword: " { send "$oldRootPasswd\r"; }
+	
+	timeout { puts stderr "$ipaddr error - su timed out"; exit 1}
+}
+
+expect {
+	"*Authentication failure*" { puts stderr "$ipaddr error - Can't su may be wrong root passwd."; exit 1}
+	"]" { send -- "passwd $userName\r"; }
+	"# " { send -- "passwd $userName\r"; }
+	
+	timeout { puts stderr "$ipaddr error - Wait for root shell timed out"; exit 1}
+}
+
+
+
+expect "*assword: " { send "$newUserPasswd\r"; }
+expect "*assword: " { send "$newUserPasswd\r"; }
+
+expect {
+	"]" { send -- "passwd root\r"; }
+	"*password updated successfully*# " { send -- "passwd root\r"; }
+
+	timeout { puts stderr "$ipaddr error - Change user password timed out"; exit 1}
+}
+
+
+expect "*assword: " { send "$newRootPasswd\r"; }
+expect "*assword: " { send "$newRootPasswd\r"; }
+
+expect {
+	"]" { exit }
+	"*password updated successfully*# " { exit }
+
+	timeout { puts stderr "$ipaddr error - Change root password timed out"; exit 1}
+}

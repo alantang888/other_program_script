@@ -1,0 +1,1 @@
+This Arduino program use Arduino nano with DHT22 to sense temperature and relative humidity, then display to 4-digi 8 segment LED display. It use bluetooth send to server for record, and read heater control temperature value to control heater's power.

@@ -1,0 +1,2 @@
+# Site name (For reporting), vCenter address, login, password
+vCenter-01,192.168.0.1,administrator@vsphere.local,P@ssw0rd

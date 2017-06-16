@@ -70,9 +70,12 @@ def getResult(email):
 
 class LookupRequestHandler(SocketServer.BaseRequestHandler):
     def handle(self):
-        self.data = self.request.recv(1024).strip()
-        self.request.sendall(getResult(self.data))
-
+        #print("new connection.")
+        while True:
+            self.data = self.request.recv(1024).strip()
+            if not self.data:
+                break
+            self.request.sendall(getResult(self.data))
 
 class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
     # For Thread share port
